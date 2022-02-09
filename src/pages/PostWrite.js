@@ -33,6 +33,7 @@ const PostWrite = (props) => {
 
         if (is_edit) {
             dispatch(imageActions.setPreview(_post.image_url));
+
         }
     }, []);
 
@@ -164,12 +165,13 @@ const PostWrite = (props) => {
                     layout === "bottom" &&
                     <>
                         <Grid padding="16px">
-                            <Grid >
+                            <Grid>
                                 <Input
                                     _onChange={changeContents}
                                     placeholder="게시글 작성3"
                                     multiLine
                                     height="250px"
+                                    defaultValue={_post.contents}
                                 />
                             </Grid>
 
@@ -194,6 +196,7 @@ const PostWrite = (props) => {
                                     placeholder="게시글 작성1"
                                     multiLine
                                     height="233.76px"
+                                    defaultValue={_post.contents}
                                 />
                             </Grid>
 
@@ -226,6 +229,7 @@ const PostWrite = (props) => {
                                     placeholder="게시글 작성2"
                                     multiLine
                                     height="233.76px"
+                                    defaultValue={_post.contents}
                                 />
                             </Grid>
                         </Grid>

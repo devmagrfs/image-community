@@ -11,12 +11,14 @@ function Input(props) {
         width,
         height,
         display,
+        defaultValue,
     } = props;
 
     const styles = {
         height: height,
         width: width,
         display: display,
+        defaultValue: defaultValue,
     }
 
     return (
@@ -42,6 +44,7 @@ Input.defaultProps = {
     height: false,
     width: "100%",
     display: "block",
+    defaultValue: '',
 }
 
 
@@ -52,6 +55,7 @@ const ElInput = styled.input`
     box-sizing: border-box;
     ${(props) => (props.height ? `height: ${props.height}` : '')};
     ${(props) => (props.display ? `display: ${props.display}` : '')};
+    ${(props) => (props.defaultValue ? `defaultValue: ${props.defaultValue}` : '')};
 `;
 
 export default Input;

@@ -1,7 +1,7 @@
 import { createAction, handleActions } from "redux-actions";
 import { produce } from "immer";
 import { firestore } from '../../shared/firebase';
-import { collection, getDocs, addDoc, query, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, addDoc, query, orderBy, limit, deleteDoc, doc, updateDoc } from "firebase/firestore";
 
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { storage } from '../../shared/firebase';
@@ -15,6 +15,7 @@ import { actionCreators as imageActions } from './image';
 const SET_POST = "SET_POST";
 const ADD_POST = "ADD_POST";
 const EDIT_POST = "EDIT_POST";
+const DELETE_POST = "DELETE_POST";
 
 
 // createActions
@@ -23,6 +24,9 @@ const addPost = createAction(ADD_POST, (post) => ({ post }));
 const editPost = createAction(EDIT_POST, (post_id, post) => ({
     post_id,
     post,
+}));
+const deletePost = createAction(DELETE_POST, (post_id, post) => ({
+    post_id,
 }));
 
 // initialState
@@ -36,6 +40,7 @@ const initialPost = {
     comments_cnt: 0,
     insert_dt: moment().format("YYYY-MM-DD hh:mm:ss"),
     layout: "bottom",
+    like_cnt: 0,
 }
 
 
@@ -53,7 +58,6 @@ const getPostFB = () => {
 
             _post.insert_dt = moment(_post.insert_dt).fromNow();
 
-
             let post = Object.keys(_post).reduce((acc, cur) => {
                 if (cur.indexOf("user_") !== -1) {
                     return {
@@ -62,7 +66,7 @@ const getPostFB = () => {
                     };
                 }
                 return { ...acc, [cur]: _post[cur] };
-            }, { id: doc.uid, user_info: {} });
+            }, { id: doc.id, user_info: {} });
             post_list.push(post);
 
         });
@@ -104,6 +108,7 @@ const addPostFB = (contents = "", layout = "bottom") => {
                         image_url: url
                     }).then((doc) => {
                         let post = { user_info, ..._post, id: doc.id, image_url: url };
+
                         dispatch(addPost(post));
                         history.replace("/");
 
@@ -120,8 +125,23 @@ const addPostFB = (contents = "", layout = "bottom") => {
     }
 }
 
+const deletePostFB = (id) => {
+    return async function (dispatch, getState, { history }) {
+        console.log(id)
+        const postRef = doc(firestore, "post", id);
 
-const editPostFB = (post_id = null, post = {}) => {
+        await deleteDoc(postRef)
+            .then(() => {
+                dispatch(deletePost(id));
+                history.replace('/');
+            }).catch((err) => {
+                console.log("Error :" + err);
+            })
+    }
+}
+
+
+const editPostFB = (post_id = null, new_post = {}) => {
     return function (dispatch, getState, { history }) {
         if (!post_id) {
             console.log("게시물 정보가 없어요!");
@@ -129,47 +149,53 @@ const editPostFB = (post_id = null, post = {}) => {
         }
 
         const _image = getState().image.preview;
-
         const _post_idx = getState().post.list.findIndex((p) => p.id === post_id);
         const _post = getState().post.list[_post_idx];
 
-        console.log(_post);
+        const _user = getState().user.user;
 
-        const postDB = firestore.collection("post");
+        const user_info = {
+            user_id: _user.uid,
+            user_name: _user.user_name,
+            user_profile: _user.user_profile
+        }
 
         if (_image === _post.image_url) {
-            postDB
-                .doc(post_id)
-                .update(post)
-                .then((doc) => {
-                    dispatch(editPost(post_id, { ...post }));
-                    history.replace("/");
-                });
+            const postDoc = doc(firestore, "post", post_id);
 
-            return;
+            updateDoc(postDoc, { new_post })
+                .then((docs) => {
+                    dispatch(editPost(post_id, { ...new_post }));
+                    history.replace("/");
+                    dispatch(imageActions.setPreview(null));
+                })
         } else {
             const user_id = getState().user.user.uid;
-            const _upload = storage
-                .ref(`images/${user_id}_${new Date().getTime()}`)
-                .putString(_image, "data_url");
+            const _image = getState().image.preview;
+            const storageRef = ref(storage, `images/${user_info.user_id}_${new Date().getTime()}`);
 
-            _upload.then((snapshot) => {
-                snapshot.ref
-                    .getDownloadURL()
+            uploadString(storageRef, _image, 'data_url').then((snapshot) => {
+                getDownloadURL(ref(storage, storageRef))
                     .then((url) => {
-                        console.log(url);
-
                         return url;
+                    }).then(url => {
+                        addDoc(collection(firestore, "post"), {
+                            ...user_info,
+                            ..._post,
+                            image_url: url
+                        }).then((doc) => {
+                            let post = { user_info, ..._post, id: doc.id, image_url: url };
+
+                            dispatch(addPost(post));
+                            history.replace("/");
+
+                            dispatch(imageActions.setPreview(null));
+                        }).catch((err) => {
+                            window.alert("포스트 작성에 실패했어요.")
+                            console.log("포스트 작성에 실패했어요.", err);
+                        })
                     })
-                    .then((url) => {
-                        postDB
-                            .doc(post_id)
-                            .update({ ...post, image_url: url })
-                            .then((doc) => {
-                                dispatch(editPost(post_id, { ...post, image_url: url }));
-                                history.replace("/");
-                            });
-                    })
+
                     .catch((err) => {
                         window.alert("앗! 이미지 업로드에 문제가 있어요!");
                         console.log("앗! 이미지 업로드에 문제가 있어요!", err);
@@ -193,9 +219,12 @@ export default handleActions(
         [EDIT_POST]: (state, action) =>
             produce(state, (draft) => {
                 let idx = draft.list.findIndex((p) => p.id === action.payload.post_id);
-
                 draft.list[idx] = { ...draft.list[idx], ...action.payload.post };
             }),
+        [DELETE_POST]: (state, action) =>
+            produce(state, (draft) => {
+
+            })
     }, initialState)
 
 
@@ -207,6 +236,7 @@ const actionCreators = {
     getPostFB,
     addPostFB,
     editPostFB,
+    deletePostFB,
 }
 
 export { actionCreators };

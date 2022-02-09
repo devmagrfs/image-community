@@ -1,13 +1,24 @@
 import React from 'react';
 import { Grid, Image, Text, Button } from '../elements';
 import { history } from '../redux/configureStore';
+import { useDispatch } from 'react-redux';
+
+import { actionCreators as postActions } from '../redux/modules/post';
+import { actionCreators as likeActions } from '../redux/modules/like';
+import LikeButton from './LikeButton';
 
 function Post(props) {
+    const dispatch = useDispatch();
+
+    // React.useEffect(() => {
+    //     dispatch(likeActions.getLikeFB(id));
+    // }, [dispatch])
+
     const {
         user_info,
         image_url,
         contents,
-        likes_cnt,
+        like_cnt,
         insert_dt,
         id,
         layout,
@@ -16,6 +27,9 @@ function Post(props) {
         comments_cnt
     } = props;
 
+    const deletePost = () => {
+        dispatch(postActions.deletePostFB(id));
+    }
 
     return (
         <>
@@ -28,15 +42,27 @@ function Post(props) {
                     <Grid width="40%" is_flex>
                         <Text>{insert_dt}</Text>
                         {is_me &&
-                            (<Button
-                                text="수정"
-                                width="40%"
-                                padding="4px"
-                                margin="4px"
-                                _onClick={() => {
-                                    history.push(`/write/${id}`)
-                                }}>
-                            </Button>)}
+                            (
+                                <>
+                                    <Button
+                                        text="수정"
+                                        width="40%"
+                                        padding="4px"
+                                        margin="4px"
+                                        _onClick={() => {
+                                            history.push(`/write/${id}`)
+                                        }}>
+                                    </Button>
+                                    <Button
+                                        text="삭제"
+                                        width="40%"
+                                        padding="4px"
+                                        margin="4px"
+                                        _onClick={deletePost}
+                                    >
+                                    </Button>
+                                </>
+                            )}
                     </Grid>
                 </Grid>
 
@@ -96,8 +122,10 @@ function Post(props) {
                 <Grid is_flex>
                     <Grid is_flex width="150px" padding="16px" bg={"#f2f4f7"}>
                         <Text bold bg={"#f2f4f7"}>댓글 {comments_cnt}개</Text>
-                        <Text bold bg={"#f2f4f7"}>좋아요 {likes_cnt}개</Text>
+                        <Text bold bg={"#f2f4f7"}>좋아요 {like_cnt}개</Text>
                     </Grid>
+
+                    <LikeButton post_id={id} />
                 </Grid>
             </Grid>
         </>

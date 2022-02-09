@@ -16,8 +16,6 @@ import Header from './Header';
 import Permit from './Permit';
 import PostDetail from '../pages/PostDetail';
 import PostWrite from '../pages/PostWrite';
-import Search from './Search';
-import Notification from '../pages/Notifiation';
 
 function App() {
   const dispatch = useDispatch();
@@ -40,9 +38,7 @@ function App() {
           <Route path="/login" exact component={Login} />
           <Route path="/join" exact component={Join} />
           <Route path="/write" exact component={PostWrite} />
-          <Route path="/post/:id" exact component={PostDetail} />
-          <Route path="/search" exact component={Search} />
-          <Route path="/noti" exact component={Notification} />
+          <Route path="/write/:id" exact component={PostWrite} />
         </ConnectedRouter>
       </Grid>
       <Permit>
