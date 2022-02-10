@@ -66,10 +66,10 @@ function Header(props) {
         <Grid is_flex padding="4px 16px" margin="20px 0 50px 0">
             <Grid>
                 <HomeIcon
-                    width="50"
-                    height="50"
-                    fill="#FF6666"
-                    onClick={() => { history.push("/") }}
+                    style={{ color: "#FF6666", fontSize: "50px" }}
+                    onClick={() => {
+                        history.push("/")
+                    }}
                 />
             </Grid>
 

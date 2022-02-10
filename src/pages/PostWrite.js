@@ -171,7 +171,6 @@ const PostWrite = (props) => {
                                     placeholder="게시글 작성3"
                                     multiLine
                                     height="250px"
-                                    defaultValue={_post.contents}
                                 />
                             </Grid>
 
@@ -196,7 +195,6 @@ const PostWrite = (props) => {
                                     placeholder="게시글 작성1"
                                     multiLine
                                     height="233.76px"
-                                    defaultValue={_post.contents}
                                 />
                             </Grid>
 
@@ -229,7 +227,6 @@ const PostWrite = (props) => {
                                     placeholder="게시글 작성2"
                                     multiLine
                                     height="233.76px"
-                                    defaultValue={_post.contents}
                                 />
                             </Grid>
                         </Grid>

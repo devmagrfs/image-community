@@ -120,12 +120,12 @@ function Post(props) {
                 )}
 
                 <Grid is_flex>
-                    <Grid is_flex width="150px" padding="16px" bg={"#f2f4f7"}>
+                    <Grid is_flex width="200px" padding="16px" bg={"#f2f4f7"}>
                         <Text bold bg={"#f2f4f7"}>댓글 {comments_cnt}개</Text>
                         <Text bold bg={"#f2f4f7"}>좋아요 {like_cnt}개</Text>
                     </Grid>
 
-                    <LikeButton post_id={id} />
+                    {/* <LikeButton post_id={id} /> */}
                 </Grid>
             </Grid>
         </>
