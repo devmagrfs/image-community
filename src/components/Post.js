@@ -4,7 +4,7 @@ import { history } from '../redux/configureStore';
 import { useDispatch } from 'react-redux';
 
 import { actionCreators as postActions } from '../redux/modules/post';
-import { actionCreators as likeActions } from '../redux/modules/like';
+// import { actionCreators as likeActions } from '../redux/modules/like';
 import LikeButton from './LikeButton';
 
 function Post(props) {
